@@ -1,6 +1,7 @@
 <?php
 
 error_reporting(E_ALL | E_STRICT);
+set_error_handler(create_function('$nr, $msg = "Error"', 'throw new Exception($msg);'), E_ALL);
 
 require_once("endpoint_game.php");
 require_once("endpoint_compatibility.php");
