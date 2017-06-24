@@ -52,16 +52,45 @@ class Database
 		}
 	}
 	
-	function InsertCompatibility($gameId, $rating)
+	function GetCompatibility($gameId)
 	{
-		$statement = $this->connection->prepare("INSERT INTO ps_compatibility (gameId, rating) VALUES (?, ?)");
+		$statement = $this->connection->prepare("SELECT * FROM ps_compatibility WHERE gameId = ?");
 		if(!$statement)
 		{
 			throw new Exception(__FUNCTION__ . " failed: " . $this->connection->error);
 		}
 		try
 		{
-			$statement->bind_param('si', $gameId, $rating);
+			$statement->bind_param('s', $gameId);
+			if(!$statement->execute())
+			{
+				throw new Exception(__FUNCTION__ . " failed: " . $this->connection->error);
+			}
+			
+			$result = $statement->get_result();
+			if(!$result)
+			{
+				throw new Exception(__FUNCTION__ . " failed: " . $this->connection->error);
+			}
+			
+			return $result->fetch_all(MYSQLI_ASSOC);
+		}
+		finally
+		{
+			$statement->close();
+		}
+	}
+	
+	function InsertCompatibility($gameId, $rating, $deviceInfo)
+	{
+		$statement = $this->connection->prepare("INSERT INTO ps_compatibility (gameId, rating, deviceInfo) VALUES (?, ?, ?)");
+		if(!$statement)
+		{
+			throw new Exception(__FUNCTION__ . " failed: " . $this->connection->error);
+		}
+		try
+		{
+			$statement->bind_param('sis', $gameId, $rating, $deviceInfo);
 			if(!$statement->execute())
 			{
 				throw new Exception(__FUNCTION__ . " failed: " . $this->connection->error);
