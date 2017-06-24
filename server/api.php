@@ -28,6 +28,7 @@ function apiEntry()
 	}
 }
 
+header("Content-Type: application/json");
 try
 {
 	$result = apiEntry();
