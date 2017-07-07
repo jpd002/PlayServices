@@ -43,6 +43,7 @@ catch(Exception $exception)
 				"description" => $exception->getMessage()
 			)
 		);
+	http_response_code(400);
 	echo json_encode($error);
 }
 
