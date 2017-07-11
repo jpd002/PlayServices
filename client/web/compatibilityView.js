@@ -2,7 +2,8 @@
 
 angular.module('playApp.compatibilityView', ['ngRoute'])
 
-.config(['$routeProvider', 
+.config(
+	['$routeProvider', 
 	function($routeProvider)
 	{
 		$routeProvider.when('/compatibilityView',
@@ -15,12 +16,14 @@ angular.module('playApp.compatibilityView', ['ngRoute'])
 )
 
 .controller('compatibilityViewController', 
-	function($scope, $http) 
+	['$scope', '$http', 'playApp.apiBaseUrl',
+	function($scope, $http, apiBaseUrl)
 	{
+		$scope.gameId = 'SLES_502.82';
 		$http(
 			{
 				method: "GET",
-				url: "http://localhost/playservices/server/api.php?endpoint=compatibility&gameId=SLES_502.82"
+				url: apiBaseUrl + '?endpoint=compatibility&gameId=' + $scope.gameId
 			}
 		).then(
 			function mySuccess(response)
@@ -32,5 +35,7 @@ angular.module('playApp.compatibilityView', ['ngRoute'])
 				//$scope.myWelcome = response.statusText;
 			}
 		);
-	}
-);
+	}]
+)
+
+;

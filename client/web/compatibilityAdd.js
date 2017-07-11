@@ -2,7 +2,8 @@
 
 angular.module('playApp.compatibilityAdd', ['ngRoute'])
 
-.config(['$routeProvider', 
+.config(
+	['$routeProvider', 
 	function($routeProvider)
 	{
 		$routeProvider.when('/compatibilityAdd',
@@ -15,13 +16,14 @@ angular.module('playApp.compatibilityAdd', ['ngRoute'])
 )
 
 .controller('compatibilityAddController',
-	function($scope, $http)
+	['$scope', '$http', 'playApp.apiBaseUrl',
+	function($scope, $http, apiBaseUrl)
 	{
 		$scope.postCompat =
 			function()
 			{
 				$http.post(
-						'http://localhost/playservices/server/api.php?endpoint=compatibility', 
+						apiBaseUrl + '?endpoint=compatibility', 
 						{
 							gameId: $scope.gameId,
 							rating: $scope.rating,
@@ -42,5 +44,7 @@ angular.module('playApp.compatibilityAdd', ['ngRoute'])
 						}
 					);
 			};
-	}
-);
+	}]
+)
+
+;

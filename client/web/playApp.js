@@ -7,10 +7,16 @@ angular.module('playApp',
 		'playApp.compatibilityView'
 	]
 )
-.config(['$locationProvider', '$routeProvider', 
+
+.config(
+	['$locationProvider', '$routeProvider', 
 	function($locationProvider, $routeProvider)
 	{
 		$locationProvider.hashPrefix('!');
 		$routeProvider.otherwise({ redirectTo: '/compatibilityView'});
 	}
-]);
+])
+
+.constant('playApp.apiBaseUrl', 'http://localhost/playservices/server/api.php')
+
+;
