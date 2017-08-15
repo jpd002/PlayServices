@@ -8,6 +8,6 @@ CREATE TABLE `ps_compatibility` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `gameId` char(11) NOT NULL,
   `rating` int(11) NOT NULL,
-  `deviceInfo` json NOT NULL,
+  `deviceInfo` text NOT NULL,
   PRIMARY KEY (`id`)
 ) DEFAULT CHARSET=utf8
