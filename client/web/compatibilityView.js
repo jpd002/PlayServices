@@ -26,13 +26,13 @@ angular.module('playApp.compatibilityView', ['ngRoute'])
 				url: apiBaseUrl + '?endpoint=compatibility&gameId=' + $scope.gameId
 			}
 		).then(
-			function mySuccess(response)
+			function onSuccess(response)
 			{
 				$scope.compatibilityReports = response.data;
 			},
-			function myError(response)
+			function onError(response)
 			{
-				//$scope.myWelcome = response.statusText;
+				$scope.errorMessage = 'Failed: ' + response.statusText;
 			}
 		);
 	}]
