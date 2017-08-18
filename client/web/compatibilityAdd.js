@@ -34,11 +34,11 @@ angular.module('playApp.compatibilityAdd', ['ngRoute'])
 						}
 					)
 					.then(
-						function()
+						function onSuccess()
 						{
 							
 						},
-						function(response)
+						function onError(response)
 						{
 							alert(response.data.error.description);
 						}
