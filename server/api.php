@@ -29,22 +29,31 @@ function apiEntry()
 	}
 }
 
-header("Content-Type: application/json");
-try
+header("Access-Control-Allow-Origin: *");
+if($_SERVER['REQUEST_METHOD'] === "OPTIONS")
 {
-	$result = apiEntry();
-	echo json_encode($result);
+	header("Access-Control-Allow-Methods: GET, POST");
+	header("Access-Control-Allow-Headers: Content-Type");
 }
-catch(Exception $exception)
+else
 {
-	$error = array(
-		"error" => 
-			array(
-				"description" => $exception->getMessage()
-			)
-		);
-	http_response_code(400);
-	echo json_encode($error);
+	header("Content-Type: application/json");
+	try
+	{
+		$result = apiEntry();
+		echo json_encode($result);
+	}
+	catch(Exception $exception)
+	{
+		$error = array(
+			"error" => 
+				array(
+					"description" => $exception->getMessage()
+				)
+			);
+		http_response_code(400);
+		echo json_encode($error);
+	}
 }
 
 ?>
