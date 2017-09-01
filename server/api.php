@@ -3,8 +3,8 @@
 error_reporting(E_ALL | E_STRICT);
 set_error_handler(create_function('$nr, $msg = "Error"', 'throw new Exception($msg);'), E_ALL);
 
-require_once("endpoint_game.php");
 require_once("endpoint_compatibility.php");
+require_once("endpoint_game.php");
 
 function apiEntry()
 {
@@ -13,20 +13,21 @@ function apiEntry()
 		throw new Exception("An endpoint name must be provided.");
 	}
 	
-	$endpoint = $_GET["endpoint"];
+	$endpointName = $_GET["endpoint"];
 	
-	switch($endpoint)
+	switch($endpointName)
 	{
-	case "game":
-		return endPoint_game();
-		break;
 	case "compatibility":
-		return endPoint_compatibility();
+		$endpoint = new Endpoint_Compatibility();
+		break;
+	case "game":
+		$endpoint = new Endpoint_Game();
 		break;
 	default:
 		throw new Exception("Unknown endpoint '" . $endpoint . "'.");
-		break;
 	}
+	
+	return $endpoint->execute();
 }
 
 header("Access-Control-Allow-Origin: *");

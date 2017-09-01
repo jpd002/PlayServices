@@ -1,55 +1,33 @@
 <?php
 
 require_once("database.php");
+require_once("endpoint.php");
 
-function getParam($params, $paramName)
+class Endpoint_Compatibility extends Endpoint
 {
-	if(!isset($params[$paramName]))
+	function executeGet()
 	{
-		throw new Exception(sprintf("%s must be provided.", $paramName));
+		$gameId = $this->getParam($_GET, "gameId");
+		
+		$database = new Database();
+		$result = $database->GetCompatibility($gameId);
+		
+		return $result;
 	}
-	return $params[$paramName];
-}
 
-function endPoint_compatibility_get()
-{
-	$gameId = getParam($_GET, "gameId");
-
-	$database = new Database();
-	$result = $database->GetCompatibility($gameId);
-	
-	return $result;
-}
-
-function endPoint_compatibility_post()
-{
-	$rawParams = file_get_contents("php://input");
-	$params = json_decode($rawParams, TRUE);
-	
-	$gameId     = getParam($params, "gameId");
-	$rating     = getParam($params, "rating");
-	$deviceInfo = getParam($params, "deviceInfo");
-	
-	$database = new Database();
-	$database->InsertCompatibility($gameId, $rating, json_encode($deviceInfo));
-	
-	return array("result" => "ok");
-}
-
-function endPoint_compatibility()
-{
-	$requestMethod = $_SERVER['REQUEST_METHOD'];
-	switch($requestMethod)
+	function executePost()
 	{
-	case "GET":
-		return endPoint_compatibility_get();
-		break;
-	case "POST":
-		return endPoint_compatibility_post();
-		break;
-	default:
-		throw new Exception("Unsupported method " . $requestMethod . ".");
-		break;
+		$rawParams = file_get_contents("php://input");
+		$params = json_decode($rawParams, TRUE);
+		
+		$gameId     = $this->getParam($params, "gameId");
+		$rating     = $this->getParam($params, "rating");
+		$deviceInfo = $this->getParam($params, "deviceInfo");
+		
+		$database = new Database();
+		$database->InsertCompatibility($gameId, $rating, json_encode($deviceInfo));
+		
+		return array("result" => "ok");
 	}
 }
 
