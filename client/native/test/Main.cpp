@@ -19,6 +19,7 @@ int main(int argc, const char** argv)
 #include "http/java_net_URL.h"
 #include "http/java_net_HttpURLConnection.h"
 #include "http/java_io_InputStream.h"
+#include "http/java_io_OutputStream.h"
 #include "http/AndroidHttpClient.h"
 
 extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* aReserved)
@@ -27,6 +28,7 @@ extern "C" JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* aReserved)
 	java::net::URL_ClassInfo::GetInstance().PrepareClassInfo();
 	java::net::HttpURLConnection_ClassInfo::GetInstance().PrepareClassInfo();
 	java::io::InputStream_ClassInfo::GetInstance().PrepareClassInfo();
+	java::io::OutputStream_ClassInfo::GetInstance().PrepareClassInfo();
 	return JNI_VERSION_1_6;
 }
 
