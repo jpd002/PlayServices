@@ -1,4 +1,5 @@
 #include <memory>
+#include <cstdlib>
 #include "thegamesdb/TheGamesDbClient.h"
 #include "string_format.h"
 #include "http/HttpClientFactory.h"
