@@ -2,6 +2,7 @@
 
 #include <sqlite3.h>
 #include <stdexcept>
+#include <cassert>
 #include "Types.h"
 
 class CSqliteDb
@@ -36,7 +37,8 @@ public:
 	{
 		if(m_handle)
 		{
-			sqlite3_close(m_handle);
+			int result = sqlite3_close_v2(m_handle);
+			assert(result == SQLITE_OK);
 			m_handle = nullptr;
 		}
 	}
