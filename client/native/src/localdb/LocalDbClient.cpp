@@ -6,7 +6,7 @@
 
 using namespace LocalDb;
 
-#define DATABASE_VERSION 10
+#define DATABASE_VERSION 1
 
 static const char* g_dbPath = "local.db";
 
