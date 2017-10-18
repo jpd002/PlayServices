@@ -2,6 +2,7 @@
 #include "http/HttpClientFactory.h"
 #include "basedb/BaseDbClient.h"
 #include "thegamesdb/TheGamesDbClient.h"
+#include "localdb/LocalDbClient.h"
 
 void PrintGameInfo(const char* gameId)
 {
@@ -81,8 +82,29 @@ void DoHttpTest()
 	}
 }
 
+void ScanDiskImages(const boost::filesystem::path& parentPath)
+{
+	for(auto pathIterator = boost::filesystem::directory_iterator(parentPath);
+		pathIterator != boost::filesystem::directory_iterator(); pathIterator++)
+	{
+		auto& path = pathIterator->path();
+		if(boost::filesystem::is_directory(path))
+		{
+			ScanDiskImages(path);
+			continue;
+		}
+		auto pathExtension = path.extension();
+		if(pathExtension != ".isz") continue;
+		LocalDb::CClient::GetInstance().RegisterGame(path);
+		auto gameInfo = LocalDb::CClient::GetInstance().GetGame(path);
+		LocalDb::CClient::GetInstance().SetLastPlayedTime(path, time(nullptr));
+	}
+}
+
 int main(int argc, const char** argv)
 {
+	ScanDiskImages("C:\\Disk Images");
+
 	static const char* gameIds[] =
 	{
 		"SCUS_971.02",   //Gran Turismo 3

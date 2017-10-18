@@ -64,6 +64,8 @@ add_library(PlayServices
 	../include/coverdb/CoverDbClient.h
 	../src/thegamesdb/TheGamesDbClient.cpp
 	../include/thegamesdb/TheGamesDbClient.h
+	../src/localdb/LocalDbClient.cpp
+	../include/localdb/LocalDbClient.h
 )
 target_link_libraries(PlayServices Boost::boost)
 
