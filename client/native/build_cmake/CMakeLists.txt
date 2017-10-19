@@ -20,11 +20,11 @@ if(NOT SQLITE3_FOUND)
 	MESSAGE("-- Using Provided sqlite3 source")
 	if(NOT TARGET sqlite3static)
 		add_subdirectory(
-			${CMAKE_CURRENT_SOURCE_DIR}/../../../../Dependencies/build_cmake/sqlite-3.15.1
-			${CMAKE_CURRENT_BINARY_DIR}/sqlite-3.15.1
+			${CMAKE_CURRENT_SOURCE_DIR}/../../../../Dependencies/build_cmake/sqlite-3.20.1
+			${CMAKE_CURRENT_BINARY_DIR}/sqlite-3.20.1
 		)
 	endif()
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../../Dependencies/sqlite-3.15.1)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../../Dependencies/sqlite-3.20.1)
 	list(APPEND PROJECT_LIBS sqlite3static)
 else()
 	include_directories(${SQLITE3_INCLUDE_DIRS})
