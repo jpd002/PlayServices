@@ -24,7 +24,7 @@ function apiEntry()
 		$endpoint = new Endpoint_Game();
 		break;
 	default:
-		throw new Exception("Unknown endpoint '" . $endpoint . "'.");
+		throw new Exception("Unknown endpoint '" . $endpointName . "'.");
 	}
 	
 	return $endpoint->execute();
