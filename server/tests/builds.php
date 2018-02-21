@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types = 1);
-require_once("endpoint_builds.php");
+require_once(__DIR__ . "/../endpoint_builds.php");
 
 use PHPUnit\Framework\TestCase;
 
