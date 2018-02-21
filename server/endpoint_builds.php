@@ -2,9 +2,68 @@
 
 require_once("endpoint.php");
 require_once("config.php");
-require_once(__DIR__ . '/vendor/autoload.php');
+require_once(__DIR__ . "/vendor/autoload.php");
 
-class Endpoint_Builds extends Endpoint
+class BuildsDao
+{
+	function __construct()
+	{
+		$this->dbClient = $this->createDbClient();
+	}
+	
+	private function createDbClient()
+	{
+		global $builds_aws_access_key;
+		global $builds_aws_access_secret;
+		global $builds_aws_region;
+
+		return 
+			Aws\DynamoDb\DynamoDbClient::factory(
+				array(
+					"credentials" => array(
+										"key"    => $builds_aws_access_key,
+										"secret" => $builds_aws_access_secret,
+									),
+					"region"      => $builds_aws_region,
+					"version"     => "2012-08-10"
+				)
+			);
+	}
+	
+	function getBuildInfo()
+	{
+		$marshaler = new Aws\DynamoDb\Marshaler();
+		$params = 
+			[
+				"TableName" => "play_buildinfo"
+			];
+		$response = $this->dbClient->scan($params);
+		$items = $response["Items"];
+		if(sizeof($items) == 0) return null;
+		$item = $response["Items"][0];
+		$value = $marshaler->unmarshalItem($item);
+		return $value["buildInfo"];
+	}
+	
+	function setBuildInfo($buildInfo)
+	{
+		$marshaler = new Aws\DynamoDb\Marshaler();
+		$item = $marshaler->marshalItem(
+			[
+				"commit" => "0",
+				"buildInfo" => $buildInfo
+			]
+		);
+		$params = 
+			[
+				"TableName" => "play_buildinfo",
+				"Item" => $item
+			];
+		$this->dbClient->putItem($params);
+	}
+};
+
+class GithubDao
 {
 	function getTopCommitInfo()
 	{
@@ -29,71 +88,47 @@ class Endpoint_Builds extends Endpoint
 				"timestamp" => (new DateTime())->getTimestamp()
 			];
 	}
-	
-	function createDbClient()
-	{
-		global $builds_aws_access_key;
-		global $builds_aws_access_secret;
-		global $builds_aws_region;
+};
 
-		return 
-			Aws\DynamoDb\DynamoDbClient::factory(
-				array(
-					"credentials" => array(
-										"key"    => $builds_aws_access_key,
-										"secret" => $builds_aws_access_secret,
-									),
-					"region"      => $builds_aws_region,
-					"version"     => "2012-08-10"
-				)
-			);
+class Endpoint_Builds extends Endpoint
+{
+	static function create()
+	{
+		$result = new self();
+		$result->setBuildsDao(new BuildsDao());
+		$result->setGithubDao(new GithubDao());
+		return $result;
 	}
 	
-	function updateBuildInfo($dbClient, $buildInfo)
+	static function createWithDao($buildsDao, $githubDao)
 	{
-		$marshaler = new Aws\DynamoDb\Marshaler();
-		$item = $marshaler->marshalItem(
-			[
-				"commit" => "0",
-				"buildInfo" => $buildInfo
-			]
-		);
-		$params = 
-			[
-				"TableName" => "play_buildinfo",
-				"Item" => $item
-			];
-		$dbClient->putItem($params);
+		$result = new self();
+		$result->setBuildsDao($buildsDao);
+		$result->setGithubDao($githubDao);
+		return $result;
 	}
 	
-	function readBuildInfo($dbClient)
+	private function setBuildsDao($buildsDao)
 	{
-		$marshaler = new Aws\DynamoDb\Marshaler();
-		$params = 
-			[
-				"TableName" => "play_buildinfo"
-			];
-		$response = $dbClient->scan($params);
-		$items = $response["Items"];
-		if(sizeof($items) == 0) return null;
-		$item = $response["Items"][0];
-		$value = $marshaler->unmarshalItem($item);
-		return $value["buildInfo"];
+		$this->buildsDao = $buildsDao;
+	}
+	
+	private function setGithubDao($githubDao)
+	{
+		$this->githubDao = $githubDao;
 	}
 	
 	function executeGet()
 	{
-		//TODO: Check if it's up to date
-		$dbClient = $this->createDbClient();
-		$buildInfo = $this->readBuildInfo($dbClient);
+		$buildInfo = $this->buildsDao->getBuildInfo();
 		$buildInfoTimestamp = $buildInfo["timestamp"];
 		$nowTimestamp = (new DateTime())->getTimestamp();
 		$buildInfoAge = $nowTimestamp - $buildInfoTimestamp;
 		if($buildInfoAge > 3600)  //3600 seconds -> 1 hour
 		{
 			//Update commit info
-			$buildInfo = $this->getTopCommitInfo();
-			$this->updateBuildInfo($dbClient, $buildInfo);
+			$buildInfo = $this->githubDao->getTopCommitInfo();
+			$this->buildsDao->setBuildInfo($buildInfo);
 		}
 		return $buildInfo;
 	}

@@ -5,5 +5,8 @@
         "aws/aws-sdk-php": "^3.52",
         "knplabs/github-api": "^2.7",
         "php-http/guzzle6-adapter": "^1.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.5"
     }
 }
