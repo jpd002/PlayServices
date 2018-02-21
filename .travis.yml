@@ -1,4 +1,6 @@
 language: php
 php:
   - '7.0'
-script: phpunit server/tests/*
+script:
+  - cp server/config_template.php server/config.php
+  - phpunit server/tests/*
