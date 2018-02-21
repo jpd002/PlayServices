@@ -1,6 +1,6 @@
 language: php
 php:
-  - '7.0'
+  - 7.1.3
 script:
   - composer -d=server install
   - cp server/config_template.php server/config.php
