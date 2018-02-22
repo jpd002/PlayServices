@@ -4,3 +4,12 @@ php:
 script:
   - composer -d=server install
   - phpunit server/tests/*
+deploy:
+  provider: elasticbeanstalk
+  access_key_id:
+  secret_access_key:
+    secure:
+  region: us-west-2
+  app: "PlayServices"
+  env: "playservices-test-env"
+  bucket_name: "test"
