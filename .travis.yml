@@ -13,3 +13,6 @@ deploy:
   app: "PlayServices"
   env: "playservices-test-env"
   bucket_name: "test"
+  on:
+    repo: jpd002/PlayServices
+
