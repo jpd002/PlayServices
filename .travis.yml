@@ -15,4 +15,4 @@ deploy:
   bucket_name: "test"
   on:
     repo: jpd002/PlayServices
-
+    all_branches: true
