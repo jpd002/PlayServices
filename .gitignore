@@ -2,3 +2,5 @@
 .gradle
 .idea
 build
+server/vendor
+server/config.php
