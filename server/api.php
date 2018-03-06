@@ -19,7 +19,7 @@ function apiEntry()
 	switch($endpointName)
 	{
 	case "builds":
-		$endpoint = new Endpoint_Builds();
+		$endpoint = Endpoint_Builds::create();
 		break;
 	case "compatibility":
 		$endpoint = new Endpoint_Compatibility();
