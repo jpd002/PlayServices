@@ -3,4 +3,4 @@
 .idea
 build
 server/vendor
-server/config.php
+server/config_override.php
