@@ -32,10 +32,12 @@ class BuildsDao
 	
 	function getBuildInfo()
 	{
+		global $builds_dynamodb_table_name;
+		
 		$marshaler = new Aws\DynamoDb\Marshaler();
 		$params = 
 			[
-				"TableName" => "play_buildinfo"
+				"TableName" => $builds_dynamodb_table_name
 			];
 		$response = $this->dbClient->scan($params);
 		$items = $response["Items"];
@@ -56,7 +58,7 @@ class BuildsDao
 		);
 		$params = 
 			[
-				"TableName" => "play_buildinfo",
+				"TableName" => $builds_dynamodb_table_name,
 				"Item" => $item
 			];
 		$this->dbClient->putItem($params);
