@@ -1,0 +1,72 @@
+<html>
+	<head>
+		<title>
+			Build fetch test.
+		</title>
+	</head>
+	<body>
+		<script>
+			function fetchBuilds() 
+			{
+				var apiBaseUrl = "http://playservices-test.us-west-2.elasticbeanstalk.com"
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", apiBaseUrl + "/api.php?endpoint=builds", true);
+				xhr.setRequestHeader("Content-type", "application/json");
+				xhr.onload = 
+					function()
+					{
+						var fetchStatusElement = document.getElementById("build-fetchStatus");
+						var buildDetailsElement = document.getElementById("build-details");
+						if(xhr.status === 200)
+						{
+							fetchStatusElement.style.display = "none";
+							buildDetailsElement.style.display = "inline";
+							var response = JSON.parse(xhr.responseText);
+							{
+								var element = document.getElementById("build-commitDescription");
+								element.innerText = response.commitHash + " " + response.commitMessage;
+								element.setAttribute("href", "https://github.com/jpd002/Play-/commit/" + response.commitHash);
+							}
+							{
+								var element = document.getElementById("build-win32-32");
+								element.setAttribute("href", "https://s3.us-east-2.amazonaws.com/playbuilds/" + response.commitHash + "/Play-0.30-32.exe");
+							}
+							{
+								var element = document.getElementById("build-win32-64");
+								element.setAttribute("href", "https://s3.us-east-2.amazonaws.com/playbuilds/" + response.commitHash + "/Play-0.30-64.exe");
+							}
+							{
+								var element = document.getElementById("build-macos");
+								element.setAttribute("href", "https://s3.us-east-2.amazonaws.com/playbuilds/" + response.commitHash + "/Play.dmg");
+							}
+						}
+						else
+						{
+							fetchStatusElement.innerText = "Failed to obtain build info.";
+						}
+					};
+				xhr.send();
+			}
+			fetchBuilds();
+		</script>
+		<div id="build-fetchStatus">
+			Checking build status.
+		</div>
+		<table id="build-details" style="display: none">
+			<tr>
+				<td>Commit:</td>
+				<td><a id="build-commitDescription"></a></td>
+			</tr>
+			<tr>
+				<td>Builds:</td>
+				<td>
+					<div>
+						<a id="build-win32-64">Windows (64-bit)</a> |
+						<a id="build-win32-32">Windows (32-bit)</a> |
+						<a id="build-macos">macOS</a>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
