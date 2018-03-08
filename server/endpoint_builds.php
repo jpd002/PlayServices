@@ -49,6 +49,8 @@ class BuildsDao
 	
 	function setBuildInfo($buildInfo)
 	{
+		global $builds_dynamodb_table_name;
+		
 		$marshaler = new Aws\DynamoDb\Marshaler();
 		$item = $marshaler->marshalItem(
 			[
