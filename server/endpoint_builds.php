@@ -80,7 +80,7 @@ class GithubDao
 		$commit = $branch["commit"];
 		$commitHash = $commit["sha"];
 		$commitMessage = $commit["commit"]["message"];
-		$commitDate = $commit["commit"]["author"]["date"];
+		$commitDate = $commit["commit"]["committer"]["date"];
 		$commitShortHash = substr($commitHash, 0, 8);
 		$commitStatus = $client->api("repo")->statuses()->combined("jpd002", "Play-", $commitHash);
 		$hasBuild = $commitStatus["state"] === "success";
