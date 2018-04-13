@@ -1,109 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json;
+using PlayServices;
 
 namespace PlayCompatValidator
 {
-    class IssueLabel
-    {
-        public string id { get; set; }
-        public string name { get; set; }
-    };
-
-    class RawIssue
-    {
-        public string url { get; set; }
-        public string html_url { get; set; }
-        public string title { get; set; }
-        public string body { get; set; }
-        public List<IssueLabel> labels { get; set; }
-    };
-
     class GameCompatibility
     {
         public string GameId { get; set; }
-
         public string State { get; set; }
     }
 
     class Program
     {
-        const string g_issuesDirectory = "issues";
-
-        static string ExtractUrlFromLink(string link)
-        {
-            var urlStart = link.IndexOf('<') + 1;
-            var urlEnd = link.IndexOf('>');
-            if(urlStart > urlEnd) throw new System.Exception("Invalid link.");
-            return link.Substring(urlStart, urlEnd - urlStart);
-        }
-        
-        static string ExtractNextLinkUrl(WebHeaderCollection responseHeaders)
-        {
-            var linkHeader = responseHeaders.Get("Link");
-            if(linkHeader == null) return String.Empty;
-            var linkList = linkHeader.Split(", ");
-            foreach(var link in linkList)
-            {
-                if(!link.Contains("rel=\"next\"")) continue;
-                var linkUrl = ExtractUrlFromLink(link);
-                return linkUrl;
-            }
-            return String.Empty;
-        }
-
-        static string DownloadIssuePage(string url, string outputPath)
-        {
-            using (var client = new WebClient())
-            {
-                client.Headers.Add("User-Agent: Other");
-                client.DownloadFile(url, outputPath);
-                var nextPageUrl = ExtractNextLinkUrl(client.ResponseHeaders);
-                return nextPageUrl;
-            }
-        }
-
-        static void DownloadIssues()
-        {
-            int issuePageCounter = 0;
-            var pageUrl = "https://api.github.com/repos/jpd002/Play-Compatibility/issues";
-            if(System.IO.Directory.Exists(g_issuesDirectory))
-            {
-                System.IO.Directory.Delete(g_issuesDirectory, true);
-            }
-            System.IO.Directory.CreateDirectory(g_issuesDirectory);
-            while(true)
-            {
-                var outputPath = String.Format("{0}/issues_{1}.json", g_issuesDirectory, issuePageCounter);
-                pageUrl = DownloadIssuePage(pageUrl, outputPath);
-                issuePageCounter++;
-                if(String.IsNullOrEmpty(pageUrl)) break;
-            }
-        }
-
-        static string ReadFileContents(string path)
-        {
-            using (StreamReader sr = new StreamReader(path))
-            {
-                return sr.ReadToEnd();
-            }  
-        }
-
-        static List<RawIssue> ReadIssues()
-        {
-            var issues = new List<RawIssue>();
-            foreach(var file in System.IO.Directory.EnumerateFiles(g_issuesDirectory, "issues_*.json"))
-            {
-                var issueFileContents = ReadFileContents(file);
-                var rawIssues = JsonConvert.DeserializeObject<List<RawIssue>>(issueFileContents);
-                issues.AddRange(rawIssues);
-            }
-            return issues;
-        }
-
         static string[] headersReference =
         {
             "**Last Tested On**",
@@ -135,15 +45,14 @@ namespace PlayCompatValidator
             }
         }
 
-        static IReadOnlyCollection<GameCompatibility> GetGameCompatibilities()
+        static bool ValidateGameCompatibilities()
         {
-            DownloadIssues();
-
-            var rawIssues = ReadIssues();
+            bool isValid = true;
+            var rawIssues = Github.ReadIssues();
 
             using (var sw = new StreamWriter("report.txt"))
             {
-                var gameCompatibilities = new Dictionary<string, GameCompatibility>();
+                var gameIds = new HashSet<string>();
                 foreach (var rawIssue in rawIssues)
                 {
                     try
@@ -157,30 +66,41 @@ namespace PlayCompatValidator
                         //Validate game Id XXXX-XXXXXX
                         var gameName = matches[0].Groups[2].Value;
 
-                        if (gameCompatibilities.ContainsKey(gameId)) throw new System.Exception("Disc ID already exists.");
+                        if (gameIds.Contains(gameId)) throw new System.Exception("Disc ID already exists.");
+                        gameIds.Add(gameId);
 
                         ValidateBody(rawIssue.body);
 
-                        if (rawIssue.labels.Count == 0) throw new System.Exception("Issue doesn't have a label.");
+                        int stateLabelCount = 0;
+                        foreach(var label in rawIssue.labels)
+                        {
+                            if(label.name.StartsWith("state-")) stateLabelCount++;
+                        }
 
-                        gameCompatibilities.Add(gameId, new GameCompatibility { GameId = gameId, State = rawIssue.labels[0].name });
+                        if(stateLabelCount != 1) throw new System.Exception("Issue doesn't have a state label.");
                     }
                     catch (System.Exception exception)
                     {
+                        isValid = false;
                         sw.WriteLine(
                             string.Format("Validation error for '{0}', {1} : {2}",
                             rawIssue.title, rawIssue.html_url, exception.Message)
                         );
                     }
                 }
-
-                return gameCompatibilities.Values;
             }
+            return isValid;
         }
         
         static void Main(string[] args)
         {
-            var values = GetGameCompatibilities();
+            Github.DownloadIssues();
+            if(!ValidateGameCompatibilities())
+            {
+                System.Console.WriteLine("Compatibility report validation failed. See 'report.txt' for details.");
+                return;
+            }
+            //var values = GetGameCompatibilities();
         }
     }
 }
