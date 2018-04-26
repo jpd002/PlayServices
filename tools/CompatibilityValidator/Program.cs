@@ -14,6 +14,34 @@ namespace PlayCompatValidator
 
     class Program
     {
+        static Tuple<string, string> ExtractGameInfo(string issueTitle)
+        {
+            var reg = new Regex(@"\[([^]]*)\] (.*)");
+            var matches = reg.Matches(issueTitle);
+            if (matches.Count != 1) throw new System.Exception();
+            if (matches[0].Groups.Count != 3) throw new System.Exception("Bad issue title format.");
+            var gameId = matches[0].Groups[1].Value;
+            //Validate game Id XXXX-XXXXXX
+            var gameName = matches[0].Groups[2].Value;
+            return Tuple.Create(gameId, gameName);
+        }
+        
+        static string GetState(IEnumerable<Github.IssueLabel> labels)
+        {
+            var stateLabels = new List<Github.IssueLabel>();
+            foreach(var label in labels)
+            {
+                if(label.name.StartsWith("state-"))
+                {
+                    stateLabels.Add(label);
+                }
+            }
+
+            if(stateLabels.Count != 1) throw new System.Exception("Issue doesn't have a state label or has multiple state labels.");
+
+            return stateLabels[0].name;
+        }
+
         static string[] headersReference =
         {
             "**Last Tested On**",
@@ -57,27 +85,13 @@ namespace PlayCompatValidator
                 {
                     try
                     {
-                        //Extract info and validate title
-                        var reg = new Regex(@"\[([^]]*)\] (.*)");
-                        var matches = reg.Matches(rawIssue.title);
-                        if (matches.Count != 1) throw new System.Exception();
-                        if (matches[0].Groups.Count != 3) throw new System.Exception("Bad issue title format.");
-                        var gameId = matches[0].Groups[1].Value;
-                        //Validate game Id XXXX-XXXXXX
-                        var gameName = matches[0].Groups[2].Value;
+                        var gameInfo = ExtractGameInfo(rawIssue.title);
 
-                        if (gameIds.Contains(gameId)) throw new System.Exception("Disc ID already exists.");
-                        gameIds.Add(gameId);
+                        if (gameIds.Contains(gameInfo.Item1)) throw new System.Exception("Disc ID already exists.");
+                        gameIds.Add(gameInfo.Item1);
 
                         ValidateBody(rawIssue.body);
-
-                        int stateLabelCount = 0;
-                        foreach(var label in rawIssue.labels)
-                        {
-                            if(label.name.StartsWith("state-")) stateLabelCount++;
-                        }
-
-                        if(stateLabelCount != 1) throw new System.Exception("Issue doesn't have a state label.");
+                        GetState(rawIssue.labels);
                     }
                     catch (System.Exception exception)
                     {
@@ -92,6 +106,21 @@ namespace PlayCompatValidator
             return isValid;
         }
         
+        static List<GameCompatibility> GetGameCompatibilities()
+        {
+            var result = new List<GameCompatibility>();
+            var rawIssues = Github.ReadIssues();
+            foreach (var rawIssue in rawIssues)
+            {
+                var gameInfo = ExtractGameInfo(rawIssue.title);
+                var compat = new GameCompatibility();
+                compat.GameId = gameInfo.Item1;
+                compat.State = GetState(rawIssue.labels);
+                result.Add(compat);
+            }
+            return result;
+        }
+
         static void Main(string[] args)
         {
             Github.DownloadIssues();
@@ -100,7 +129,14 @@ namespace PlayCompatValidator
                 System.Console.WriteLine("Compatibility report validation failed. See 'report.txt' for details.");
                 return;
             }
-            //var values = GetGameCompatibilities();
+            var gameCompats = GetGameCompatibilities();
+            var stateCount = new Dictionary<string, int>();
+            foreach(var gameCompat in gameCompats)
+            {
+                int currentCount = 0;
+                stateCount.TryGetValue(gameCompat.State, out currentCount);
+                stateCount[gameCompat.State] = currentCount + 1;
+            }
         }
     }
 }
