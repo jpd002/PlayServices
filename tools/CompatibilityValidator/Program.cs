@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using PlayServices;
+using Newtonsoft.Json;
 
 namespace PlayCompatValidator
 {
@@ -11,6 +12,21 @@ namespace PlayCompatValidator
         public string GameId { get; set; }
         public string State { get; set; }
     }
+
+    public class CompatibilitySummaryItem
+    {
+        [JsonProperty("state")]
+        public string State { get; set; } = String.Empty;
+
+        [JsonProperty("count")]
+        public int Count { get; set; }
+    };
+
+    public class CompatibilitySummary
+    {
+        [JsonProperty("items")]
+        public List<CompatibilitySummaryItem> Items { get; set; } = new List<CompatibilitySummaryItem>();
+    };
 
     class Program
     {
@@ -121,14 +137,8 @@ namespace PlayCompatValidator
             return result;
         }
 
-        static void Main(string[] args)
+        static void GenerateCompatibilitySummary()
         {
-            Github.DownloadIssues();
-            if(!ValidateGameCompatibilities())
-            {
-                System.Console.WriteLine("Compatibility report validation failed. See 'report.txt' for details.");
-                return;
-            }
             var gameCompats = GetGameCompatibilities();
             var stateCount = new Dictionary<string, int>();
             foreach(var gameCompat in gameCompats)
@@ -137,6 +147,28 @@ namespace PlayCompatValidator
                 stateCount.TryGetValue(gameCompat.State, out currentCount);
                 stateCount[gameCompat.State] = currentCount + 1;
             }
+
+            var summary = new CompatibilitySummary();
+            foreach(var entry in stateCount)
+            {
+                var summaryItem = new CompatibilitySummaryItem();
+                summaryItem.State = entry.Key;
+                summaryItem.Count = entry.Value;
+                summary.Items.Add(summaryItem);
+            }
+            var result = JsonConvert.SerializeObject(summary.Items);
+            File.WriteAllText("compat_summary.json", result);
+        }
+
+        static void Main(string[] args)
+        {
+            Github.DownloadIssues();
+            if(!ValidateGameCompatibilities())
+            {
+                System.Console.WriteLine("Compatibility report validation failed. See 'report.txt' for details.");
+                return;
+            }
+            GenerateCompatibilitySummary();
         }
     }
 }
