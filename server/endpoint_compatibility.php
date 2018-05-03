@@ -1,33 +1,29 @@
 <?php
 
-require_once("database.php");
 require_once("endpoint.php");
+require_once(__DIR__ . "/vendor/autoload.php");
+
+use Aws\S3\S3Client;
 
 class Endpoint_Compatibility extends Endpoint
 {
 	function executeGet()
 	{
-		$gameId = $this->getParam($_GET, "gameId");
+		global $compat_aws_region;
+		global $compat_s3_bucket_name;
 		
-		$database = new Database();
-		$result = $database->GetCompatibility($gameId);
-		
+		//If no gameId is provided, return summary
+		$s3 = new S3Client([
+			"version"     => "latest",
+			"region"      => $compat_aws_region,
+			"credentials" => false
+		]);
+		$result = $s3->getObject([
+			"Bucket" => $compat_s3_bucket_name,
+			"Key"    => "compat_summary.json"
+		]);
+		$result = json_decode($result["Body"]);
 		return $result;
-	}
-
-	function executePost()
-	{
-		$rawParams = file_get_contents("php://input");
-		$params = json_decode($rawParams, TRUE);
-		
-		$gameId     = $this->getParam($params, "gameId");
-		$rating     = $this->getParam($params, "rating");
-		$deviceInfo = $this->getParam($params, "deviceInfo");
-		
-		$database = new Database();
-		$database->InsertCompatibility($gameId, $rating, json_encode($deviceInfo));
-		
-		return array("result" => "ok");
 	}
 }
 
