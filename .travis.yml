@@ -4,6 +4,7 @@ dotnet: 2.1
 script:
   - pushd server
   - dotnet restore
+  - dotnet build
 deploy:
   - provider: elasticbeanstalk
     skip_cleanup: true
