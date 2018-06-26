@@ -1,14 +1,8 @@
-language: php
-php:
-  - 7.1.3
+language: csharp
+mono: none
+dotnet: 2.1.3
 script:
-  - composer --working-dir=server install
-  - phpunit server/tests/*
-  - git stash --all
-  - cd server
-  - zip -r deploy.zip *
-  - cd ..
-  - mv ./server/deploy.zip deploy.zip
+  - dotnet restore
 deploy:
   - provider: elasticbeanstalk
     skip_cleanup: true
