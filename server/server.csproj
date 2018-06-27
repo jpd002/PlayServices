@@ -11,4 +11,8 @@
     <PackageReference Include="Octokit" Version="0.30.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="aws-windows-deployment-manifest.json" CopyToPublishDirectory="Always" />
+  </ItemGroup>
+
 </Project>

@@ -5,6 +5,7 @@ script:
   - pushd server
   - dotnet restore
   - dotnet build
+  - dotnet publish -o deploy
 deploy:
   - provider: elasticbeanstalk
     skip_cleanup: true
