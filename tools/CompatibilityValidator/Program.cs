@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using PlayServices;
 using Newtonsoft.Json;
+using Octokit;
 
 namespace PlayCompatValidator
 {
@@ -42,12 +42,12 @@ namespace PlayCompatValidator
             return Tuple.Create(gameId, gameName);
         }
         
-        static string GetState(IEnumerable<Github.IssueLabel> labels)
+        static string GetState(IEnumerable<Label> labels)
         {
-            var stateLabels = new List<Github.IssueLabel>();
+            var stateLabels = new List<Label>();
             foreach(var label in labels)
             {
-                if(label.name.StartsWith("state-"))
+                if(label.Name.StartsWith("state-"))
                 {
                     stateLabels.Add(label);
                 }
@@ -55,7 +55,7 @@ namespace PlayCompatValidator
 
             if(stateLabels.Count != 1) throw new System.Exception("Issue doesn't have a state label or has multiple state labels.");
 
-            return stateLabels[0].name;
+            return stateLabels[0].Name;
         }
 
         static string[] headersReference =
@@ -89,10 +89,9 @@ namespace PlayCompatValidator
             }
         }
 
-        static bool ValidateGameCompatibilities()
+        static bool ValidateGameCompatibilities(IEnumerable<Issue> rawIssues)
         {
             bool isValid = true;
-            var rawIssues = Github.ReadIssues();
 
             using (var sw = new StreamWriter("report.txt"))
             {
@@ -101,45 +100,43 @@ namespace PlayCompatValidator
                 {
                     try
                     {
-                        var gameInfo = ExtractGameInfo(rawIssue.title);
+                        var gameInfo = ExtractGameInfo(rawIssue.Title);
 
                         if (gameIds.Contains(gameInfo.Item1)) throw new System.Exception("Disc ID already exists.");
                         gameIds.Add(gameInfo.Item1);
 
-                        ValidateBody(rawIssue.body);
-                        GetState(rawIssue.labels);
+                        ValidateBody(rawIssue.Body);
+                        GetState(rawIssue.Labels);
                     }
                     catch (System.Exception exception)
                     {
                         isValid = false;
                         sw.WriteLine(
                             string.Format("Validation error for '{0}', {1} : {2}",
-                            rawIssue.title, rawIssue.html_url, exception.Message)
+                            rawIssue.Title, rawIssue.HtmlUrl, exception.Message)
                         );
                     }
                 }
             }
             return isValid;
         }
-        
-        static List<GameCompatibility> GetGameCompatibilities()
+
+        static List<GameCompatibility> GetGameCompatibilities(IEnumerable<Issue> rawIssues)
         {
             var result = new List<GameCompatibility>();
-            var rawIssues = Github.ReadIssues();
             foreach (var rawIssue in rawIssues)
             {
-                var gameInfo = ExtractGameInfo(rawIssue.title);
+                var gameInfo = ExtractGameInfo(rawIssue.Title);
                 var compat = new GameCompatibility();
                 compat.GameId = gameInfo.Item1;
-                compat.State = GetState(rawIssue.labels);
+                compat.State = GetState(rawIssue.Labels);
                 result.Add(compat);
             }
             return result;
         }
 
-        static void GenerateCompatibilitySummary()
+        static void GenerateCompatibilitySummary(IEnumerable<GameCompatibility> gameCompats)
         {
-            var gameCompats = GetGameCompatibilities();
             var stateCount = new Dictionary<string, int>();
             foreach(var gameCompat in gameCompats)
             {
@@ -162,13 +159,24 @@ namespace PlayCompatValidator
 
         static void Main(string[] args)
         {
-            Github.DownloadIssues();
-            if(!ValidateGameCompatibilities())
+            var client = new GitHubClient(new ProductHeaderValue("PlayServices"));
+            var ghToken = Environment.GetEnvironmentVariable("ps_gh_apitoken");
+            if(!String.IsNullOrEmpty(ghToken))
+            {
+                client.Credentials = new Credentials(ghToken);
+            }
+
+            var issuesTask = client.Issue.GetAllForRepository("jpd002", "Play-Compatibility");
+            issuesTask.Wait();
+            var issues = issuesTask.Result;
+
+            if(!ValidateGameCompatibilities(issues))
             {
                 System.Console.WriteLine("Compatibility report validation failed. See 'report.txt' for details.");
                 return;
             }
-            GenerateCompatibilitySummary();
+            var gameCompats = GetGameCompatibilities(issues);
+            GenerateCompatibilitySummary(gameCompats);
         }
     }
 }
