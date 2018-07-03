@@ -39,7 +39,10 @@ namespace PlayServices.Server
             {
                 app.UseHsts();
             }
-
+            app.UseExceptionHandler(new ExceptionHandlerOptions
+            {
+                ExceptionHandler = new JsonExceptionMiddleware().Invoke
+            });
             app.UseHttpsRedirection();
             app.UseMvc();
         }
