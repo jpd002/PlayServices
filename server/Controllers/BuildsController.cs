@@ -9,7 +9,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using Amazon.DynamoDBv2.DataModel;
 
-namespace AspNetCoreTest.Controllers
+namespace PlayServices.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
