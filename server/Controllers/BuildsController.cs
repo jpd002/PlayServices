@@ -19,6 +19,11 @@ namespace PlayServices.Server.Controllers
         static readonly string g_repositoryName = "Play-";
         static readonly string g_commitId = "0";
 
+        static readonly string g_env_ps_builds_aws_access_key = "ps_builds_aws_access_key";
+        static readonly string g_env_ps_builds_aws_access_secret = "ps_builds_aws_access_secret";
+        static readonly string g_env_ps_gh_apitoken = "ps_gh_apitoken";
+        static readonly string g_env_ps_builds_dynamodb_table_name = "ps_builds_dynamodb_table_name";
+
         class BuildInfo
         {
             [DynamoDBHashKey("commit")]
@@ -29,15 +34,15 @@ namespace PlayServices.Server.Controllers
 
         private AmazonDynamoDBClient CreateDynamoDbClient()
         {
-            var awsAccessKey = Environment.GetEnvironmentVariable("ps_builds_aws_access_key");
-            var awsSecretKey = Environment.GetEnvironmentVariable("ps_builds_aws_access_secret");
+            var awsAccessKey = Environment.GetEnvironmentVariable(g_env_ps_builds_aws_access_key);
+            var awsSecretKey = Environment.GetEnvironmentVariable(g_env_ps_builds_aws_access_secret);
             var creds = new Amazon.Runtime.BasicAWSCredentials(awsAccessKey, awsSecretKey);
             return new AmazonDynamoDBClient(creds, RegionEndpoint.USWest2);
         }
 
         private async Task<PlayServices.Build> GetTopCommitInfo()
         {
-            var ghToken = Environment.GetEnvironmentVariable("ps_gh_apitoken");
+            var ghToken = Environment.GetEnvironmentVariable(g_env_ps_gh_apitoken);
             var client = new GitHubClient(new ProductHeaderValue("PlayServices"));
             client.Credentials = new Credentials(ghToken);
             var masterCommit = await client.Repository.Commit.Get(g_userName, g_repositoryName, "heads/master");
@@ -56,7 +61,7 @@ namespace PlayServices.Server.Controllers
         {
             var client = CreateDynamoDbClient();
             var context = new DynamoDBContext(client);
-            var cfg = new DynamoDBOperationConfig() { OverrideTableName = "play_buildinfo_test" };
+            var cfg = new DynamoDBOperationConfig() { OverrideTableName = Environment.GetEnvironmentVariable(g_env_ps_builds_dynamodb_table_name) };
             var buildInfo = await context.LoadAsync<BuildInfo>(g_commitId, cfg);
             if(buildInfo == null) return null;
             //Fixup datetimes due to bug in conversion from DynamoDB
@@ -69,7 +74,7 @@ namespace PlayServices.Server.Controllers
         {
             var client = CreateDynamoDbClient();
             var context = new DynamoDBContext(client);
-            var cfg = new DynamoDBOperationConfig() { OverrideTableName = "play_buildinfo_test" };
+            var cfg = new DynamoDBOperationConfig() { OverrideTableName = Environment.GetEnvironmentVariable(g_env_ps_builds_dynamodb_table_name) };
             var bi = new BuildInfo();
             bi.Commit = g_commitId;
             bi.Build = buildInfo;
