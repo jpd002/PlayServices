@@ -2,5 +2,7 @@
 .gradle
 .idea
 build
-server/vendor
-server/config_override.php
+#For .NET Core projects
+obj
+bin
+deploy
