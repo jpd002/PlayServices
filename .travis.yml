@@ -2,9 +2,8 @@ language: csharp
 mono: none
 dotnet: 2.1
 script:
-  - pushd server
-  - dotnet restore
   - dotnet build
+  - pushd server
   - dotnet publish -o deploy -c Release
   - pushd deploy
   - zip -r9 ../deploy.zip *
