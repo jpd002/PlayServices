@@ -3,10 +3,9 @@ mono: none
 dotnet: 2.1
 script:
   - dotnet build
-  - pushd server
-  - dotnet publish -o deploy -c Release
-  - pushd deploy
-  - zip -r9 ../deploy.zip *
+  - dotnet publish server -o deploy -c Release
+  - pushd server/deploy
+  - zip -r9 ../../deploy.zip *
   - popd
 deploy:
   - provider: elasticbeanstalk
