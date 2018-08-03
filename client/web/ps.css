@@ -1,9 +1,0 @@
-body
-{
-	font-family: Helvetica;
-}
-
-tr:nth-child(even)
-{
-	background-color: lavender;
-}
