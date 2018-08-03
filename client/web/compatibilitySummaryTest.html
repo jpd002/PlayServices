@@ -1,55 +1,88 @@
 <html>
-    <head>
-        <title>Compatibility Summary Test</title>
-    </head>
-    <body>
-        <script>
-            function fetchBuilds() 
-            {
-                var apiBaseUrl = "http://localhost/playservices/server"
-                var xhr = new XMLHttpRequest();
-                xhr.open("GET", apiBaseUrl + "/api.php?endpoint=compatibility", true);
-                xhr.setRequestHeader("Content-type", "application/json");
-                xhr.onload = 
-                    function()
-                    {
-                        if(xhr.status === 200)
-                        {
-                            var response = JSON.parse(xhr.responseText);
-                            var updateStateSpan = 
-                                function(stateName)
-                                {
-                                    {
-                                        var state = response.find(function(elem) { return elem.state == stateName; });
-                                        var element = document.getElementById(stateName + "-count");
-                                        element.innerText = state.count; 
-                                    }
-                                    {
-                                        var element = document.getElementById(stateName + "-link");
-                                        element.setAttribute("href", "http://github.com/jpd002/Play-Compatibility/issues?utf8=%E2%9C%93&q=is:issue+is:open+label:" + stateName);
-                                    }
-                                };
-                            updateStateSpan("state-playable");
-                            updateStateSpan("state-ingame");
-                            updateStateSpan("state-intro");
-                            updateStateSpan("state-loadable");
-                            updateStateSpan("state-nothing");
-                        }
-                        else
-                        {
-                            //fetchStatusElement.innerText = "Failed to obtain build info.";
-                        }
-                    };
-                xhr.send();
-            }
-            fetchBuilds();
-        </script>
-        <div>
-            <p><a id="state-playable-link">Playable</a>: <span id="state-playable-count"></span></p>
-            <p><a id="state-ingame-link">In-Game</a>: <span id="state-ingame-count"></span></p>
-            <p><a id="state-intro-link">Intro Only</a>: <span id="state-intro-count"></span></p>
-            <p><a id="state-loadable-link">Loadable</a>: <span id="state-loadable-count"></span></p>
-            <p><a id="state-nothing-link">Nothing</a>: <span id="state-nothing-count"></span></p>
-        </div>
-    </body>
+	<head>
+		<title>
+			Compatibility Fetch Test
+		</title>
+	</head>
+	<body>
+		<script>
+			function getStatesTotal(states)
+			{
+				var total = 0;
+				for(var state of states)
+				{
+					total += state.count;
+				}
+				return total;
+			}
+
+			function updateState(states, stateName, total)
+			{
+				var stateElement = document.getElementById("compat-details-" + stateName);
+				var state = states.find(function(state) { return state.state === stateName; });
+				stateElement.innerText = Math.floor(state.count / total * 100) + "%";
+			}
+
+			function fetchCompatibility() 
+			{
+				var apiBaseUrl = "http://playservices-test.us-west-2.elasticbeanstalk.com"
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", apiBaseUrl + "/api/compatibility", true);
+				xhr.setRequestHeader("Content-type", "application/json");
+				xhr.onload = 
+					function()
+					{
+						var fetchStatusElement = document.getElementById("compat-fetchStatus");
+						var detailsElement = document.getElementById("compat-details");
+						if(xhr.status === 200)
+						{
+							fetchStatusElement.style.display = "none";
+							detailsElement.style.display = "inline";
+							var response = JSON.parse(xhr.responseText);
+							var total = getStatesTotal(response.items);
+							updateState(response.items, "state-nothing", total);
+							updateState(response.items, "state-loadable", total);
+							updateState(response.items, "state-intro", total);
+							updateState(response.items, "state-ingame", total);
+							updateState(response.items, "state-playable", total);
+						}
+						else
+						{
+							fetchStatusElement.innerText = "Failed to obtain compatibility info.";
+						}
+					};
+				xhr.send();
+			}
+			fetchCompatibility();
+		</script>
+		<div id="compat-fetchStatus">
+			Checking compatibility status.
+		</div>
+		<table id="compat-details" style="display: none">
+			<tr>
+				<th>State</th>
+				<th>Ratio</th>
+			</tr>
+			<tr>
+				<td>Nothing</td>
+				<td id="compat-details-state-nothing"></td>
+			</tr>
+			<tr>
+				<td>Loadable</td>
+				<td id="compat-details-state-loadable"></td>
+			</tr>
+			<tr>
+				<td>Intro</td>
+				<td id="compat-details-state-intro"></td>
+			</tr>
+			<tr>
+				<td>Ingame</td>
+				<td id="compat-details-state-ingame"></td>
+			</tr>
+			<tr>
+				<td>Playable</td>
+				<td id="compat-details-state-playable"></td>
+			</tr>
+		</table>
+	</body>
 </html>
