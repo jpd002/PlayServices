@@ -27,6 +27,7 @@ namespace PlayServices.CompatibilityValidator
                 summaryItem.Count = entry.Value;
                 summary.Items.Add(summaryItem);
             }
+            summary.UpdateTime = DateTime.UtcNow;
             return summary;
         }
 

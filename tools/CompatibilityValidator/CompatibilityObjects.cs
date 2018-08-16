@@ -23,5 +23,8 @@ namespace PlayServices
     {
         [JsonProperty("items")]
         public List<CompatibilitySummaryItem> Items { get; set; } = new List<CompatibilitySummaryItem>();
+
+        [JsonProperty("updateTime")]
+        public DateTime UpdateTime { get; set; }
     };
 }
