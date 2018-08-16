@@ -28,16 +28,28 @@
 								element.setAttribute("href", "https://github.com/jpd002/Play-/commit/" + response.commitHash);
 							}
 							{
-								var element = document.getElementById("build-win32-32");
+								var element = document.getElementById("build-play-win32-32");
 								element.setAttribute("href", "https://s3.us-east-2.amazonaws.com/playbuilds/" + response.commitHash + "/Play-0.30-32.exe");
 							}
 							{
-								var element = document.getElementById("build-win32-64");
+								var element = document.getElementById("build-play-win32-64");
 								element.setAttribute("href", "https://s3.us-east-2.amazonaws.com/playbuilds/" + response.commitHash + "/Play-0.30-64.exe");
 							}
 							{
-								var element = document.getElementById("build-macos");
+								var element = document.getElementById("build-play-macos");
 								element.setAttribute("href", "https://s3.us-east-2.amazonaws.com/playbuilds/" + response.commitHash + "/Play.dmg");
+							}
+							{
+								var element = document.getElementById("build-play-android");
+								element.setAttribute("href", "https://s3.us-east-2.amazonaws.com/playbuilds/" + response.commitHash + "/Play-release.apk");
+							}
+							{
+								var element = document.getElementById("build-psfplayer-win32-32");
+								element.setAttribute("href", "https://s3.us-east-2.amazonaws.com/playbuilds/" + response.commitHash + "/PsfPlayer-1.02-32.exe");
+							}
+							{
+								var element = document.getElementById("build-psfplayer-win32-64");
+								element.setAttribute("href", "https://s3.us-east-2.amazonaws.com/playbuilds/" + response.commitHash + "/PsfPlayer-1.02-64.exe");
 							}
 						}
 						else
@@ -58,12 +70,22 @@
 				<td><a id="build-commitDescription"></a></td>
 			</tr>
 			<tr>
-				<td>Builds:</td>
+				<td>Play! Builds:</td>
 				<td>
 					<div>
-						<a id="build-win32-64">Windows (64-bit)</a> |
-						<a id="build-win32-32">Windows (32-bit)</a> |
-						<a id="build-macos">macOS</a>
+						<a id="build-play-win32-64">Windows (64-bit)</a> |
+						<a id="build-play-win32-32">Windows (32-bit)</a> |
+						<a id="build-play-macos">macOS</a> |
+						<a id="build-play-android">Android</a>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>PsfPlayer Builds:</td>
+				<td>
+					<div>
+						<a id="build-psfplayer-win32-64">Windows (64-bit)</a> |
+						<a id="build-psfplayer-win32-32">Windows (32-bit)</a>
 					</div>
 				</td>
 			</tr>
