@@ -27,7 +27,7 @@ namespace PlayServices.Server.Controllers
             string responseBody;
             using (var response = await client.GetObjectAsync(getRequest))
             {
-                using (StreamReader reader = new StreamReader(response.ResponseStream))
+                using (var reader = new StreamReader(response.ResponseStream))
                 {
                     responseBody = reader.ReadToEnd();
                 }
