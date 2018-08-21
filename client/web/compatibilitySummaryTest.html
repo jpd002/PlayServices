@@ -45,6 +45,9 @@
 							updateState(response.items, "state-intro", total);
 							updateState(response.items, "state-ingame", total);
 							updateState(response.items, "state-playable", total);
+							var formatOptions = { year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric", timeZoneName: "short" };
+							var dateText = new Intl.DateTimeFormat("en-CA", formatOptions).format(Date.parse(response.updateTime));
+							document.getElementById("compat-updateTime").innerText = dateText;
 						}
 						else
 						{
@@ -58,31 +61,36 @@
 		<div id="compat-fetchStatus">
 			Checking compatibility status.
 		</div>
-		<table id="compat-details" style="display: none">
-			<tr>
-				<th>State</th>
-				<th>Ratio</th>
-			</tr>
-			<tr>
-				<td>Nothing</td>
-				<td id="compat-details-state-nothing"></td>
-			</tr>
-			<tr>
-				<td>Loadable</td>
-				<td id="compat-details-state-loadable"></td>
-			</tr>
-			<tr>
-				<td>Intro</td>
-				<td id="compat-details-state-intro"></td>
-			</tr>
-			<tr>
-				<td>Ingame</td>
-				<td id="compat-details-state-ingame"></td>
-			</tr>
-			<tr>
-				<td>Playable</td>
-				<td id="compat-details-state-playable"></td>
-			</tr>
-		</table>
+		<div id="compat-details" style="display: none">
+			<table>
+				<tr>
+					<th>State</th>
+					<th>Ratio</th>
+				</tr>
+				<tr>
+					<td><a href="https://github.com/jpd002/Play-Compatibility/issues?q=is%3Aissue+is%3Aopen+label%3Astate-nothing">Nothing</a></td>
+					<td id="compat-details-state-nothing"></td>
+				</tr>
+				<tr>
+					<td><a href="https://github.com/jpd002/Play-Compatibility/issues?q=is%3Aissue+is%3Aopen+label%3Astate-loadable">Loadable</a></td>
+					<td id="compat-details-state-loadable"></td>
+				</tr>
+				<tr>
+					<td><a href="https://github.com/jpd002/Play-Compatibility/issues?q=is%3Aissue+is%3Aopen+label%3Astate-intro">Intro</a></td>
+					<td id="compat-details-state-intro"></td>
+				</tr>
+				<tr>
+					<td><a href="https://github.com/jpd002/Play-Compatibility/issues?q=is%3Aissue+is%3Aopen+label%3Astate-ingame">Ingame</a></td>
+					<td id="compat-details-state-ingame"></td>
+				</tr>
+				<tr>
+					<td><a href="https://github.com/jpd002/Play-Compatibility/issues?q=is%3Aissue+is%3Aopen+label%3Astate-playable">Playable</a></td>
+					<td id="compat-details-state-playable"></td>
+				</tr>
+			</table>
+			<div>
+				Last updated: <span id="compat-updateTime"></span>
+			</div>
+		</div>
 	</body>
 </html>
