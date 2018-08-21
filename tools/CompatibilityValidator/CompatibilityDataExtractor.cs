@@ -86,7 +86,7 @@ namespace PlayServices
                         ValidateBody(rawIssue.Body);
                         GetState(rawIssue.Labels);
                     }
-                    catch (System.Exception exception)
+                    catch(System.Exception exception)
                     {
                         isValid = false;
                         sw.WriteLine(
@@ -104,16 +104,23 @@ namespace PlayServices
             var result = new List<GameCompatibility>();
             foreach (var rawIssue in rawIssues)
             {
-                var gameInfo = ExtractGameInfo(rawIssue.Title);
-                var compat = new GameCompatibility();
-                compat.GameId = gameInfo.Item1;
-                compat.State = GetState(rawIssue.Labels);
-                result.Add(compat);
+                try
+                {
+                    var gameInfo = ExtractGameInfo(rawIssue.Title);
+                    var compat = new GameCompatibility();
+                    compat.GameId = gameInfo.Item1;
+                    compat.State = GetState(rawIssue.Labels);
+                    result.Add(compat);
+                }
+                catch(System.Exception exception)
+                {
+                    System.Console.WriteLine("Warning: Failed to obtain info about {0}.", rawIssue.Title);
+                }
             }
             return result;
         }
 
-        public static List<GameCompatibility> GetGameCompatibilities()
+        public static IReadOnlyList<Octokit.Issue> GetIssuesFromRepository()
         {
             var client = new GitHubClient(new ProductHeaderValue("PlayServices"));
             var ghToken = Environment.GetEnvironmentVariable("ps_gh_apitoken");
@@ -124,13 +131,18 @@ namespace PlayServices
 
             var issuesTask = client.Issue.GetAllForRepository("jpd002", "Play-Compatibility");
             issuesTask.Wait();
-            var issues = issuesTask.Result;
+            return issuesTask.Result;
+        }
 
-            if(!ValidateGameCompatibilitiesInternal(issues))
-            {
-                throw new Exception("Compatibility report validation failed. See 'report.txt' for details.");
-            }
+        public static bool ValidateGameCompatibilities()
+        {
+            var issues = GetIssuesFromRepository();
+            return ValidateGameCompatibilitiesInternal(issues);
+        }
 
+        public static List<GameCompatibility> GetGameCompatibilities()
+        {
+            var issues = GetIssuesFromRepository();
             return GetGameCompatibilitiesInternal(issues);
         }
     }
