@@ -1,19 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace PlayServices.Server
 {
+    public class SelfUserRequirement : IAuthorizationRequirement
+    {
+
+    };
+
+    public class SelfUserHandler : AuthorizationHandler<SelfUserRequirement>
+    {
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SelfUserRequirement requirement)
+        {
+            if(context.Resource is AuthorizationFilterContext mvcContext)
+            {
+                var userId = mvcContext.RouteData.Values["id"] as string;
+                if(context.User.HasClaim(c => c.Type == ClaimTypes.Name && c.Value == userId))
+                {
+                    context.Succeed(requirement);
+                }
+            }
+            return Task.CompletedTask;
+        }
+    }
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -33,6 +60,29 @@ namespace PlayServices.Server
                        .AllowAnyHeader();
             }));
             services.AddMvc().AddNewtonsoftJson();
+            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("accessTokenKey"));
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("CanAccessSelfInfo", policy => policy.Requirements.Add(new SelfUserRequirement()));
+            });
+            services.AddSingleton<IAuthorizationHandler, SelfUserHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,6 +103,7 @@ namespace PlayServices.Server
             });
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseAuthentication();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
