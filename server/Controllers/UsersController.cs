@@ -7,10 +7,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using Amazon;
-using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.Model;
-using Amazon.DynamoDBv2.DataModel;
+using PlayServices.DataModel;
 
 namespace PlayServices.Server.Controllers
 {
@@ -25,17 +22,7 @@ namespace PlayServices.Server.Controllers
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        static readonly string g_env_ps_builds_aws_access_key = "ps_builds_aws_access_key";
-        static readonly string g_env_ps_builds_aws_access_secret = "ps_builds_aws_access_secret";
-        static readonly string g_env_ps_users_table_name = "play_users_test";
-
-        private AmazonDynamoDBClient CreateDynamoDbClient()
-        {
-            var awsAccessKey = Environment.GetEnvironmentVariable(g_env_ps_builds_aws_access_key);
-            var awsSecretKey = Environment.GetEnvironmentVariable(g_env_ps_builds_aws_access_secret);
-            var creds = new Amazon.Runtime.BasicAWSCredentials(awsAccessKey, awsSecretKey);
-            return new AmazonDynamoDBClient(creds, RegionEndpoint.USWest2);
-        }
+        UserService _userService = new DataModel.UserService();
 
         public static string GenerateRandomCryptographicKey(int keyLength)
         {
@@ -46,44 +33,39 @@ namespace PlayServices.Server.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> Create()
+        public async Task<ActionResult> Create()
         {
             //Create guest user
             var guestToken = GenerateRandomCryptographicKey(32);
 
             var user = new User();
             user.Id = Guid.NewGuid();
-            user.AuthMethods.Add(PlayServices.User.AUTHTYPE_GUEST, guestToken);
-
-            //Save to DB
-            var client = CreateDynamoDbClient();
-            var context = new DynamoDBContext(client);
-            var cfg = new DynamoDBOperationConfig() { OverrideTableName = g_env_ps_users_table_name };
-            await context.SaveAsync(user, cfg);
+            user.GuestAuth = new User.GuestAuthMethod { Token = guestToken };
+            await _userService.SaveUser(user);
 
             //Return response
             var response = new CreateResponse();
             response.Id = user.Id;
             response.GuestToken = guestToken;
-            return new JsonResult(response);
+            return Ok(response);
         }
 
         [HttpPost("{id}/sessions")]
         public async Task<ActionResult> CreateSession(Guid id, [FromForm] string authType, [FromForm] string authToken)
         {
-            //Load from DB
-            var client = CreateDynamoDbClient();
-            var context = new DynamoDBContext(client);
-            var cfg = new DynamoDBOperationConfig() { OverrideTableName = g_env_ps_users_table_name };
-            var user = await context.LoadAsync<User>(id, cfg);
-
-            string userAuthToken = string.Empty;
-            if(!user.AuthMethods.TryGetValue(authType, out userAuthToken))
+            //Only guest login is supported
+            if(authType != "guest")
             {
-                throw new Exception("Invalid authentication type.");
+                return Unauthorized();
             }
 
-            if(userAuthToken != authToken)
+            var user = await _userService.GetUser(id);
+            if(user.GuestAuth == null)
+            {
+                return Unauthorized();
+            }
+
+            if(user.GuestAuth.Token != authToken)
             {
                 return Unauthorized();
             }
