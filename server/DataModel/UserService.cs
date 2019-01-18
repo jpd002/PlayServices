@@ -10,14 +10,10 @@ namespace PlayServices.DataModel
 {
     public class UserService
     {
-        static readonly string g_env_ps_builds_aws_access_key = "ps_builds_aws_access_key";
-        static readonly string g_env_ps_builds_aws_access_secret = "ps_builds_aws_access_secret";
-        static readonly string g_env_ps_users_table_name = "play_users_test";
-
         private AmazonDynamoDBClient CreateDynamoDbClient()
         {
-            var awsAccessKey = Environment.GetEnvironmentVariable(g_env_ps_builds_aws_access_key);
-            var awsSecretKey = Environment.GetEnvironmentVariable(g_env_ps_builds_aws_access_secret);
+            var awsAccessKey = Environment.GetEnvironmentVariable(ConfigKeys.g_env_ps_builds_aws_access_key);
+            var awsSecretKey = Environment.GetEnvironmentVariable(ConfigKeys.g_env_ps_builds_aws_access_secret);
             var creds = new Amazon.Runtime.BasicAWSCredentials(awsAccessKey, awsSecretKey);
             return new AmazonDynamoDBClient(creds, RegionEndpoint.USWest2);
         }
@@ -26,7 +22,7 @@ namespace PlayServices.DataModel
         {
             var client = CreateDynamoDbClient();
             var context = new DynamoDBContext(client);
-            var cfg = new DynamoDBOperationConfig() { OverrideTableName = g_env_ps_users_table_name };
+            var cfg = new DynamoDBOperationConfig() { OverrideTableName = Environment.GetEnvironmentVariable(ConfigKeys.g_env_ps_users_dynamodb_table_name) };
             return context.LoadAsync<User>(id, cfg);
         }
 
@@ -34,7 +30,7 @@ namespace PlayServices.DataModel
         {
             var client = CreateDynamoDbClient();
             var context = new DynamoDBContext(client);
-            var cfg = new DynamoDBOperationConfig() { OverrideTableName = g_env_ps_users_table_name };
+            var cfg = new DynamoDBOperationConfig() { OverrideTableName = Environment.GetEnvironmentVariable(ConfigKeys.g_env_ps_users_dynamodb_table_name) };
             return context.SaveAsync(user, cfg);
         }
     };
