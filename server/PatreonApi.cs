@@ -30,7 +30,7 @@ namespace PlayServices
         public class User
         {
             [JsonProperty("id")]
-            public int Id { get; set; }
+            public uint Id { get; set; }
         };
 
         public class IdentityResponse
