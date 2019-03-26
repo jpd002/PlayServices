@@ -60,7 +60,7 @@ namespace PlayServices.Server
                        .AllowAnyHeader();
             }));
             services.AddMvc().AddNewtonsoftJson();
-            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("accessTokenKey"));
+            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable(ConfigKeys.g_env_accessTokenKey));
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

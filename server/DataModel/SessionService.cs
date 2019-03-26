@@ -11,7 +11,7 @@ namespace PlayServices.DataModel
     {
         public string CreateSession(Guid userId)
         {
-            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("accessTokenKey"));
+            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable(ConfigKeys.g_env_accessTokenKey));
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]

@@ -10,5 +10,7 @@ namespace PlayServices
         public const string g_env_ps_builds_aws_access_secret = "ps_builds_aws_access_secret";
         public const string g_env_ps_builds_dynamodb_table_name = "ps_builds_dynamodb_table_name";
         public const string g_env_ps_users_dynamodb_table_name = "ps_users_dynamodb_table_name";
+
+        public const string g_env_accessTokenKey = "ps_accessTokenKey";
     };
 }
