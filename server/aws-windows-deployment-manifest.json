@@ -3,7 +3,7 @@
     "deployments": {
         "aspNetCoreWeb": [
             {
-                "name": "hello-mvc-net21",
+                "name": "playservices",
                 "parameters": {
                     "appBundle": ".",
                     "iisPath": "/",
