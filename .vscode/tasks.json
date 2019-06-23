@@ -5,7 +5,7 @@
     "tasks": [
         {
             "label": "build",
-            "command": "dotnet build tools/CompatibilityValidator/CompatibilityValidator.csproj",
+            "command": "dotnet build PlayServices.sln",
             "type": "shell",
             "group": "build",
             "problemMatcher": "$msCompile"
