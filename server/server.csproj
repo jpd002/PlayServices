@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.1" />
     <PackageReference Include="AWSSDK.S3" Version="3.3.20" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.10.1" />
     <PackageReference Include="Octokit" Version="0.30.0" />
   </ItemGroup>
