@@ -8,7 +8,7 @@
                     "appBundle": ".",
                     "iisPath": "/",
                     "iisWebSite": "Default Web Site"
-                },
+                }
             }
         ]
     }
