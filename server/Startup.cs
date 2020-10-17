@@ -19,6 +19,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PlayServices.Services;
 using PlayServices.Services.Interfaces;
+using PlayServices.DataModel;
+using PlayServices.DataModel.Interfaces;
 
 namespace PlayServices.Server
 {
@@ -67,6 +69,7 @@ namespace PlayServices.Server
             services.AddSingleton<IAuthorizationHandler, SelfUserHandler>();
             services.AddSingleton<IUserService>(new UserService());
             services.AddSingleton<ISessionService>(new SessionService());
+            services.AddSingleton<IGameDataService>(new GameDataService());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
