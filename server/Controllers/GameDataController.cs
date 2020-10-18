@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using PlayServices.Services.Interfaces;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PlayServices.Server.Controllers
@@ -28,6 +28,7 @@ namespace PlayServices.Server.Controllers
         }
 
         [HttpPost]
+        [Authorize("CanAccessSelfInfo")]
         public async Task<ActionResult> Create(string userId, string gameId)
         {
             var createUrl = await _gameDataService.GetNextDataCreateUrl(userId, gameId);
@@ -39,6 +40,7 @@ namespace PlayServices.Server.Controllers
         }
 
         [HttpGet]
+        [Authorize("CanAccessSelfInfo")]
         public async Task<ActionResult> Get(string userId, string gameId)
         {
             var currentIndex = await _gameDataService.GetCurrentIndex(userId, gameId);
