@@ -17,30 +17,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using PlayServices.DataModel;
+using PlayServices.DataModel.Interfaces;
 
 namespace PlayServices.Server
 {
-    public class SelfUserRequirement : IAuthorizationRequirement
-    {
-
-    };
-
-    public class SelfUserHandler : AuthorizationHandler<SelfUserRequirement>
-    {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SelfUserRequirement requirement)
-        {
-            if(context.Resource is AuthorizationFilterContext mvcContext)
-            {
-                var userId = mvcContext.RouteData.Values["id"] as string;
-                if(context.User.HasClaim(c => c.Type == ClaimTypes.Name && c.Value == userId))
-                {
-                    context.Succeed(requirement);
-                }
-            }
-            return Task.CompletedTask;
-        }
-    }
-
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -53,6 +34,7 @@ namespace PlayServices.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable(ConfigKeys.g_env_accessTokenKey));
             services.AddCors(o => o.AddPolicy("DefaultPolicy", builder =>
             {
                 builder.AllowAnyOrigin()
@@ -60,7 +42,7 @@ namespace PlayServices.Server
                        .AllowAnyHeader();
             }));
             services.AddMvc().AddNewtonsoftJson();
-            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable(ConfigKeys.g_env_accessTokenKey));
+            services.AddHttpContextAccessor();
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -83,6 +65,7 @@ namespace PlayServices.Server
                 options.AddPolicy("CanAccessSelfInfo", policy => policy.Requirements.Add(new SelfUserRequirement()));
             });
             services.AddSingleton<IAuthorizationHandler, SelfUserHandler>();
+            services.AddSingleton<ISessionService>(new SessionService());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -104,6 +87,7 @@ namespace PlayServices.Server
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthentication();
+            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
