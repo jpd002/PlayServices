@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
+using PlayServices.DataModel;
+using PlayServices.Services.Interfaces;
 
-namespace PlayServices.DataModel
+namespace PlayServices.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         AmazonDynamoDBClient _client;
 

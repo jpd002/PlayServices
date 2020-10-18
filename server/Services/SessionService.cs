@@ -1,13 +1,14 @@
 using Microsoft.IdentityModel.Tokens;
+using PlayServices.Services.Interfaces;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Security.Claims;
 using System.Text;
 
-namespace PlayServices.DataModel
+namespace PlayServices.Services
 {
-    public class SessionService
+    public class SessionService : ISessionService
     {
         public string CreateSession(Guid userId)
         {

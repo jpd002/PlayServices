@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PlayServices.DataModel;
+using PlayServices.Services.Interfaces;
 using System;
 using System.Threading.Tasks;
 
@@ -11,11 +12,17 @@ namespace PlayServices.Server.Controllers
     {
         PatreonApi _patreon = new PatreonApi();
 
-        UserService _userService = new DataModel.UserService();
-        SessionService _sessionService = new DataModel.SessionService();
+        IUserService _userService;
+        ISessionService _sessionService;
         string _patreonClientId = Environment.GetEnvironmentVariable(ConfigKeys.g_env_ps_patreon_client_id);
         string _patreonClientSecret = Environment.GetEnvironmentVariable(ConfigKeys.g_env_ps_patreon_client_secret);
         string _patreonRedirectUri = Environment.GetEnvironmentVariable(ConfigKeys.g_env_ps_patreon_redirect_uri);
+
+        CallbacksController(IUserService userService, ISessionService sessionService)
+        {
+            _userService = userService;
+            _sessionService = sessionService;
+        }
 
         [HttpGet("patreon")]
         public async Task<ActionResult> HandleRedirect([FromQuery] string code, [FromQuery] string state)

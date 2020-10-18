@@ -17,8 +17,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using PlayServices.DataModel;
-using PlayServices.DataModel.Interfaces;
+using PlayServices.Services;
+using PlayServices.Services.Interfaces;
 
 namespace PlayServices.Server
 {
@@ -65,6 +65,7 @@ namespace PlayServices.Server
                 options.AddPolicy("CanAccessSelfInfo", policy => policy.Requirements.Add(new SelfUserRequirement()));
             });
             services.AddSingleton<IAuthorizationHandler, SelfUserHandler>();
+            services.AddSingleton<IUserService>(new UserService());
             services.AddSingleton<ISessionService>(new SessionService());
         }
 
