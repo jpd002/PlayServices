@@ -19,8 +19,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PlayServices.Services;
 using PlayServices.Services.Interfaces;
-using PlayServices.DataModel;
-using PlayServices.DataModel.Interfaces;
 
 namespace PlayServices.Server
 {

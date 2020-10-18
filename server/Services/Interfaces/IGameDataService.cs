@@ -1,7 +1,6 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace PlayServices.DataModel.Interfaces
+namespace PlayServices.Services.Interfaces
 {
     public interface IGameDataService
     {

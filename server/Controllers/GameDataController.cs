@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using PlayServices.DataModel.Interfaces;
+using PlayServices.Services.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

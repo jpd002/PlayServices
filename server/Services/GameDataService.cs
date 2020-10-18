@@ -1,12 +1,13 @@
 using Amazon.S3;
 using Amazon.S3.Model;
+using PlayServices.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace PlayServices.DataModel
+namespace PlayServices.Services
 {
-    public class GameDataService : Interfaces.IGameDataService
+    public class GameDataService : IGameDataService
     {
         struct GameDataKey
         {
