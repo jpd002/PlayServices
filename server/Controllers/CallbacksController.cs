@@ -18,7 +18,7 @@ namespace PlayServices.Server.Controllers
         string _patreonClientSecret = Environment.GetEnvironmentVariable(ConfigKeys.g_env_ps_patreon_client_secret);
         string _patreonRedirectUri = Environment.GetEnvironmentVariable(ConfigKeys.g_env_ps_patreon_redirect_uri);
 
-        CallbacksController(IUserService userService, ISessionService sessionService)
+        public CallbacksController(IUserService userService, ISessionService sessionService)
         {
             _userService = userService;
             _sessionService = sessionService;
