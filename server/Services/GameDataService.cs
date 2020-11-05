@@ -11,7 +11,7 @@ namespace PlayServices.Services
     {
         struct GameDataKey
         {
-            public string UserId { get; set; }
+            public Guid UserId { get; set; }
             public string GameId { get; set; }
             public uint Index { get; set; }
         };
@@ -19,7 +19,7 @@ namespace PlayServices.Services
         const string _bucketName = "playservices-gamedata";
         readonly AmazonS3Client _s3Client = CreateS3Client();
 
-        static string MakeKeyPrefix(string userId, string gameId)
+        static string MakeKeyPrefix(Guid userId, string gameId)
         {
             return string.Format("{0}/{1}/", userId, gameId);
         }
@@ -40,7 +40,7 @@ namespace PlayServices.Services
             uint reverseIndex = uint.Parse(parts[2]);
             var key = new GameDataKey()
             {
-                UserId = parts[0],
+                UserId = Guid.Parse(parts[0]),
                 GameId = parts[1],
                 Index = uint.MaxValue - reverseIndex
             };
@@ -56,7 +56,7 @@ namespace PlayServices.Services
             return client;
         }
 
-        public async Task<uint?> GetCurrentIndex(string userId, string gameId)
+        public async Task<uint?> GetCurrentIndex(Guid userId, string gameId)
         {
             var prefix = MakeKeyPrefix(userId, gameId);
             var request = new ListObjectsRequest
@@ -71,7 +71,7 @@ namespace PlayServices.Services
             return key.Index;
         }
 
-        public string GetDataFetchUrl(string userId, string gameId, uint index)
+        public string GetDataFetchUrl(Guid userId, string gameId, uint index)
         {
             var dataKeyString = MakeKeyString(new GameDataKey { UserId = userId, GameId = gameId, Index = index});
             var preSignedUrlRequest = new GetPreSignedUrlRequest()
@@ -83,7 +83,7 @@ namespace PlayServices.Services
             return _s3Client.GetPreSignedURL(preSignedUrlRequest);
         }
 
-        public async Task<string> GetNextDataCreateUrl(string userId, string gameId)
+        public async Task<string> GetNextDataCreateUrl(Guid userId, string gameId)
         {
             var currentIndex = await GetCurrentIndex(userId, gameId);
             var nextIndex = currentIndex.HasValue ? currentIndex.Value + 1 : 0;
