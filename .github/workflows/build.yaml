@@ -1,0 +1,20 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - '*'
+jobs:
+  build_docker_image:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Push to Docker Hub
+      uses: docker/build-push-action@v1
+      with:
+        path: ./server
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        repository: jpd002/playservices
+        tag_with_ref: true
