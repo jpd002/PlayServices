@@ -10,6 +10,17 @@ namespace PlayServices.Server.Controllers
     [Route("api/[controller]")]
     public class CallbacksController : ControllerBase
     {
+        static readonly string _redirectPageTemplate = 
+        @"
+        <html>
+            <body>
+                <script>
+                    window.location.href = 'playservices://loginsucceeded?token={0}';
+                </script>
+            </body>
+        </html>
+        ";
+
         PatreonApi _patreon = new PatreonApi();
 
         IUserService _userService;
@@ -39,7 +50,8 @@ namespace PlayServices.Server.Controllers
                 await _userService.SaveUser(user);
             }
             var sessionToken = _sessionService.CreateSession(user.Id);
-            return Redirect(string.Format("playservices://loginsucceeded?token={0}", sessionToken));
+            var redirectPage = string.Format(_redirectPageTemplate, sessionToken);
+            return Content(redirectPage, "text/html");
         }
     }
 }
