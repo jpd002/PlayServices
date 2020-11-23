@@ -59,6 +59,10 @@ namespace PlayServices.Server.Controllers
         {
             var userId = GetUserIdFromParam(userIdOrMe);
             var currentIndex = await _gameDataService.GetCurrentIndex(userId, gameId);
+            if(!currentIndex.HasValue)
+            {
+                return NotFound();
+            }
             var fetchUrl = currentIndex.HasValue ? _gameDataService.GetDataFetchUrl(userId, gameId, currentIndex.Value) : string.Empty;
             var response = new GetResponse
             {
