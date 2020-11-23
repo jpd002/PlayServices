@@ -18,3 +18,13 @@ jobs:
         password: ${{ secrets.DOCKER_HUB_PASSWORD }}
         repository: jpd002/playservices
         tag_with_ref: true
+    - name: Update Test Environment
+      uses: einaregilsson/beanstalk-deploy@v14
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: PlayServices
+        environment_name: playservices-test
+        version_label: playservices-docker-develop
+        region: us-west-2
+
