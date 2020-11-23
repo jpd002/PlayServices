@@ -20,6 +20,7 @@ jobs:
         tag_with_ref: true
     - name: Update Test Environment
       uses: einaregilsson/beanstalk-deploy@v14
+      if: github.ref == 'refs/heads/develop'
       with:
         aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -27,4 +28,3 @@ jobs:
         environment_name: playservices-test
         version_label: playservices-docker-develop
         region: us-west-2
-
