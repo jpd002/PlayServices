@@ -31,19 +31,15 @@ namespace PlayServices.Server
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SelfUserRequirement requirement)
         {
-            if(context.Resource is RouteEndpoint endpoint)
+            var routeData = _httpContextAccessor.HttpContext.GetRouteData();
+            var userIdOrMe = GetUserIdOrMeFromRouteData(routeData);
+            if(userIdOrMe == "me" && context.User.HasClaim(c => c.Type == ClaimTypes.Name))
             {
-                var routeData = _httpContextAccessor.HttpContext.GetRouteData();
-                var descriptor = endpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
-                var userIdOrMe = GetUserIdOrMeFromRouteData(routeData);
-                if(userIdOrMe == "me" && context.User.HasClaim(c => c.Type == ClaimTypes.Name))
-                {
-                    context.Succeed(requirement);
-                }
-                else if(context.User.HasClaim(c => c.Type == ClaimTypes.Name && c.Value == userIdOrMe))
-                {
-                    context.Succeed(requirement);
-                }
+                context.Succeed(requirement);
+            }
+            else if(context.User.HasClaim(c => c.Type == ClaimTypes.Name && c.Value == userIdOrMe))
+            {
+                context.Succeed(requirement);
             }
             return Task.CompletedTask;
         }
