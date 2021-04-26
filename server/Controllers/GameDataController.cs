@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using PlayServices.DataModel;
 using PlayServices.Services.Interfaces;
 using System;
 using System.Threading.Tasks;
@@ -7,12 +8,12 @@ using System.Threading.Tasks;
 namespace PlayServices.Server.Controllers
 {
     [ApiController]
-    [Route("api/users/{userIdOrMe}/gameData/{gameId}")]
+    [Route("api/users/{userIdOrMe}/[controller]")]
     public class GameDataController : ControllerBase
     {
         struct GetResponse
         {
-            public uint? CurrentIndex { get; set; }
+            public GameDataInfo DataInfo { get; set; }
             public string Url { get; set; }
         }
         
@@ -40,7 +41,7 @@ namespace PlayServices.Server.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("{gameId}")]
         [Authorize("CanAccessSelfInfo")]
         public async Task<ActionResult> Create(string userIdOrMe, string gameId)
         {
@@ -55,18 +56,27 @@ namespace PlayServices.Server.Controllers
 
         [HttpGet]
         [Authorize("CanAccessSelfInfo")]
+        public async Task<ActionResult> GetAll(string userIdOrMe)
+        {
+            var userId = GetUserIdFromParam(userIdOrMe);
+            var result = await _gameDataService.GetAvailableData(userId);
+            return Ok(result);
+        }
+
+        [HttpGet("{gameId}")]
+        [Authorize("CanAccessSelfInfo")]
         public async Task<ActionResult> Get(string userIdOrMe, string gameId)
         {
             var userId = GetUserIdFromParam(userIdOrMe);
-            var currentIndex = await _gameDataService.GetCurrentIndex(userId, gameId);
-            if(!currentIndex.HasValue)
+            var dataInfo = await _gameDataService.GetDataInfo(userId, gameId);
+            if(dataInfo == null)
             {
                 return NotFound();
             }
-            var fetchUrl = currentIndex.HasValue ? _gameDataService.GetDataFetchUrl(userId, gameId, currentIndex.Value) : string.Empty;
+            var fetchUrl = _gameDataService.GetDataFetchUrl(userId, gameId, dataInfo.CurrentIndex);
             var response = new GetResponse
             {
-                CurrentIndex = currentIndex,
+                DataInfo = dataInfo,
                 Url = fetchUrl,
             };
             return Ok(response);

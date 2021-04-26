@@ -1,5 +1,6 @@
 using Amazon.S3;
 using Amazon.S3.Model;
+using PlayServices.DataModel;
 using PlayServices.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace PlayServices.Services
         };
 
         const string _bucketName = "playservices-gamedata";
+        const string _iconsBucketName = "playservices-gamedata-icons";
         readonly AmazonS3Client _s3Client = CreateS3Client();
 
         static string MakeKeyPrefix(Guid userId, string gameId)
@@ -56,7 +58,19 @@ namespace PlayServices.Services
             return client;
         }
 
-        public async Task<uint?> GetCurrentIndex(Guid userId, string gameId)
+        string GetDataIconUrl(Guid userId, string gameId)
+        {
+            var iconKey = string.Format("{0}/{1}.glb", userId.ToString(), gameId);
+            var preSignedUrlRequest = new GetPreSignedUrlRequest()
+            {
+                BucketName = _iconsBucketName,
+                Key = iconKey,
+                Expires = DateTime.Now.AddMinutes(15)
+            };
+            return _s3Client.GetPreSignedURL(preSignedUrlRequest);
+        }
+
+        public async Task<GameDataInfo> GetDataInfo(Guid userId, string gameId)
         {
             var prefix = MakeKeyPrefix(userId, gameId);
             var request = new ListObjectsRequest
@@ -67,10 +81,38 @@ namespace PlayServices.Services
             };
             var response = await _s3Client.ListObjectsAsync(request);
             if(response.S3Objects.Count == 0) return null;
-            var key = SplitKeyString(response.S3Objects[0].Key);
-            return key.Index;
+            var s3Object = response.S3Objects[0];
+            var key = SplitKeyString(s3Object.Key);
+            var result = new GameDataInfo
+            {
+                GameId = gameId,
+                CurrentIndex = key.Index,
+                LastModifiedDate = s3Object.LastModified,
+                IconUrl = GetDataIconUrl(userId, gameId)
+            };
+            return result;
         }
 
+        public async Task<IList<GameDataInfo>> GetAvailableData(Guid userId)
+        {
+            const string delimiter = "/";
+            var request = new ListObjectsRequest
+            {
+                BucketName = _bucketName,
+                Prefix = userId.ToString() + delimiter,
+                Delimiter = delimiter,
+            };
+            var response = await _s3Client.ListObjectsAsync(request);
+            var result = new List<GameDataInfo>();
+            foreach(var prefix in response.CommonPrefixes)
+            {
+                var parts = prefix.Split(delimiter);
+                var dataInfo = await GetDataInfo(userId, parts[1]);
+                result.Add(dataInfo);
+            }
+            return result;
+        }
+        
         public string GetDataFetchUrl(Guid userId, string gameId, uint index)
         {
             var dataKeyString = MakeKeyString(new GameDataKey { UserId = userId, GameId = gameId, Index = index});
@@ -85,8 +127,8 @@ namespace PlayServices.Services
 
         public async Task<string> GetNextDataCreateUrl(Guid userId, string gameId)
         {
-            var currentIndex = await GetCurrentIndex(userId, gameId);
-            var nextIndex = currentIndex.HasValue ? currentIndex.Value + 1 : 0;
+            var dataInfo = await GetDataInfo(userId, gameId);
+            var nextIndex = dataInfo?.CurrentIndex + 1 ?? 0;
             var dataKeyString = MakeKeyString(new GameDataKey { UserId = userId, GameId = gameId, Index = nextIndex});
             var preSignedUrlRequest = new GetPreSignedUrlRequest()
             {
