@@ -73,7 +73,7 @@ function GameDataList(props : GameDataListProps) {
         }
       };
       try {
-        const response : AxiosResponse<GameData[]> = await axios('https://localhost:5001/api/users/me/gamedata', requestConfig);
+        const response : AxiosResponse<GameData[]> = await axios(`${process.env.REACT_APP_API_ENDPOINT}/api/users/me/gamedata`, requestConfig);
         setData(response.data);
       } catch(err) {
         console.log(err);
