@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import './App.css';
-import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -104,24 +103,14 @@ function GameDataList(props : GameDataListProps) {
   }
 }
 
-function LoginButton() {
-  return (
-    <Button 
-      variant="contained"
-      color="primary"
-      onClick={function() { window.location.href = 'https://www.patreon.com/oauth2/authorize?response_type=code&client_id=ochJlBhW7r7bDjg3vcOeNu7k7rHWRKe26f89sPtH_Gku67wfr08VvT55peM_v6UU&redirect_url='; }}
-    >
-      Login
-    </Button>
-  )
-}
-
 function App() {
   const authToken = getAuthToken();
   //const authToken : string = 'blah';
   if(authToken === null) {
     return (
-      <LoginButton />
+      <div>
+        You need to use this from the Play! application.
+      </div>
     );
   } else {
     return (
