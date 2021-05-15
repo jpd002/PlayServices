@@ -3,6 +3,7 @@ using Amazon.S3.Model;
 using PlayServices.DataModel;
 using PlayServices.Services.Interfaces;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -93,7 +94,7 @@ namespace PlayServices.Services
             return result;
         }
 
-        public async Task<IList<GameDataInfo>> GetAvailableData(Guid userId)
+        public async Task<IEnumerable<GameDataInfo>> GetAvailableData(Guid userId)
         {
             const string delimiter = "/";
             var request = new ListObjectsRequest
@@ -110,7 +111,7 @@ namespace PlayServices.Services
                 var dataInfo = await GetDataInfo(userId, parts[1]);
                 result.Add(dataInfo);
             }
-            return result;
+            return result.OrderByDescending(gameDataInfo => gameDataInfo.LastModifiedDate);
         }
         
         public string GetDataFetchUrl(Guid userId, string gameId, uint index)

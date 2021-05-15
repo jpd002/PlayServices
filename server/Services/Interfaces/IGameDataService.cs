@@ -7,7 +7,7 @@ namespace PlayServices.Services.Interfaces
 {
     public interface IGameDataService
     {
-        Task<IList<GameDataInfo>> GetAvailableData(Guid userId);
+        Task<IEnumerable<GameDataInfo>> GetAvailableData(Guid userId);
 
         Task<GameDataInfo> GetDataInfo(Guid userId, string gameId);
         string GetDataFetchUrl(Guid userId, string gameId, uint index);
