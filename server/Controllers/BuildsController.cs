@@ -80,7 +80,7 @@ namespace PlayServices.Server.Controllers
         public async Task<ActionResult<string>> Get()
         {
             var buildInfo = await GetBuildInfo();
-            if((DateTime.UtcNow - buildInfo.Timestamp).TotalSeconds > 60)
+            if((buildInfo == null) || ((DateTime.UtcNow - buildInfo.Timestamp).TotalSeconds > 60))
             {
                 buildInfo = await GetTopCommitInfo();
                 await SetBuildInfo(buildInfo);
