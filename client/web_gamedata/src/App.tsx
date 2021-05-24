@@ -40,7 +40,7 @@ function GameIcon(props : GameIconProps) {
         (progress) => { },
         (error) => { console.log(`Error: ${error}`); }
     );
-  }, []);
+  }, [props.iconUrl]);
   
   if(icon === undefined) {
     return (
@@ -80,7 +80,7 @@ function GameDataList(props : GameDataListProps) {
       }
     };
     fetchData(); 
-  }, []);
+  }, [props.authToken]);
   if(data === undefined) {
     return (
       <div>Loading...</div>
