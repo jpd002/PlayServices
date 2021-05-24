@@ -16,6 +16,20 @@ jobs:
         dotnet-version: '5.0.x'
     - name: Build
       run: dotnet build
+  build_react:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.17
+    - name: Build
+      run: |
+        cd client/web_gamedata
+        npm install
+        npm run build
   build_docker_image:
     runs-on: ubuntu-latest
     steps:
