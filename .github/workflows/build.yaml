@@ -30,6 +30,26 @@ jobs:
         cd client/web_gamedata
         npm install
         npm run build
+    - name: Update Test Environment
+      uses: jakejarvis/s3-sync-action@v0.5.1
+      if: github.ref == 'refs/heads/develop'
+      with:
+        args: --acl public-read --delete
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: us-east-2
+        AWS_S3_BUCKET: playservices-gamedata-frontend-test
+        SOURCE_DIR: 'client/web_gamedata/build'
+    - name: Invalidate Test Environment CloudFront Distribution
+      uses: chetan/invalidate-cloudfront-action@v1.3
+      if: github.ref == 'refs/heads/develop'
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: us-east-2
+        DISTRIBUTION: E2LTNIIIGXFRNY
+        PATHS: '/*'
   build_docker_image:
     runs-on: ubuntu-latest
     steps:
