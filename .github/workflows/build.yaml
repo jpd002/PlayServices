@@ -73,3 +73,13 @@ jobs:
         environment_name: playservices-test
         version_label: playservices-docker-develop
         region: us-west-2
+    - name: Update Prod Environment
+      uses: einaregilsson/beanstalk-deploy@v14
+      if: github.ref == 'refs/heads/master'
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: PlayServices
+        environment_name: playservices-prod
+        version_label: playservices-docker-master
+        region: us-west-2
