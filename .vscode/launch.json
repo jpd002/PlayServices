@@ -38,7 +38,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/tools/CompatibilityValidator/bin/Debug/net5.0/CompatibilityValidator.dll",
+            "program": "${workspaceFolder}/tools/CompatibilityValidator/bin/Debug/net8.0/CompatibilityValidator.dll",
             "args": [],
             "cwd": "${workspaceRoot}",
             "stopAtEntry": false,
